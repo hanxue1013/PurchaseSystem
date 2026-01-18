@@ -1,0 +1,14 @@
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\bin\Debug\net8.0\PurchaseSystem.Worker.exe
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\bin\Debug\net8.0\PurchaseSystem.Worker.deps.json
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\bin\Debug\net8.0\PurchaseSystem.Worker.runtimeconfig.json
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\bin\Debug\net8.0\PurchaseSystem.Worker.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\bin\Debug\net8.0\PurchaseSystem.Worker.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.GeneratedMSBuildEditorConfig.editorconfig
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.AssemblyInfoInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.AssemblyInfo.cs
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.csproj.CoreCompileInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\refint\PurchaseSystem.Worker.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\PurchaseSystem.Worker.genruntimeconfig.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Worker\obj\Debug\net8.0\ref\PurchaseSystem.Worker.dll

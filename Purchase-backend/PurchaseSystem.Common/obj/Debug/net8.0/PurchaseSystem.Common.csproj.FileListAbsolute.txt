@@ -1,0 +1,11 @@
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\bin\Debug\net8.0\PurchaseSystem.Common.deps.json
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\bin\Debug\net8.0\PurchaseSystem.Common.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\bin\Debug\net8.0\PurchaseSystem.Common.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.GeneratedMSBuildEditorConfig.editorconfig
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.AssemblyInfoInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.AssemblyInfo.cs
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.csproj.CoreCompileInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\refint\PurchaseSystem.Common.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\PurchaseSystem.Common.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Common\obj\Debug\net8.0\ref\PurchaseSystem.Common.dll

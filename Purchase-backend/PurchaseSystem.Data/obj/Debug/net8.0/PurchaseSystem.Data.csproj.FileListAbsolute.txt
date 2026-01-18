@@ -1,0 +1,15 @@
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\bin\Debug\net8.0\PurchaseSystem.Data.deps.json
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\bin\Debug\net8.0\PurchaseSystem.Data.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\bin\Debug\net8.0\PurchaseSystem.Data.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.GeneratedMSBuildEditorConfig.editorconfig
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.AssemblyInfoInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.AssemblyInfo.cs
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.csproj.CoreCompileInputs.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\refint\PurchaseSystem.Data.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\ref\PurchaseSystem.Data.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\PurchaseSystem.Data.csproj.AssemblyReference.cache
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\bin\Debug\net8.0\PurchaseSystem.Model.dll
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\bin\Debug\net8.0\PurchaseSystem.Model.pdb
+D:\A-Code\Git\PurchaseSystem\PurchaseSystem.Data\obj\Debug\net8.0\Purchase.99E03A9F.Up2Date
