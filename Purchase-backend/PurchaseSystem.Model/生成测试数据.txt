@@ -1,0 +1,26 @@
+-- 使用CTE生成数字序列
+WITH Numbers AS (
+    SELECT 1 AS num
+    UNION ALL
+    SELECT num + 1
+    FROM Numbers
+    WHERE num < 12000
+),
+RandomData AS (
+    SELECT 
+        num,
+        ABS(CHECKSUM(NEWID())) % 100 AS rand_status
+    FROM Numbers
+)
+INSERT INTO Ps_Users (UserNo, UserName, UserType, Status, CreateTime)
+SELECT 
+    CASE WHEN rand_status<15 THEN 'OUT'+ RIGHT('0000' + CAST(num AS VARCHAR(10)), 5)
+	ELSE 'EMP' + RIGHT('0000' + CAST(num AS VARCHAR(10)), 5) END,
+    '员工' + CAST(num AS VARCHAR(10)),
+    CASE WHEN rand_status<15 THEN 2 ELSE 1 END,
+    CASE WHEN ABS(CHECKSUM(NEWID())) % 100 < 30 THEN -1 ELSE 1 END,
+    GETDATE()
+FROM RandomData
+OPTION (MAXRECURSION 12000);
+
+PRINT '批量插入完成！';
