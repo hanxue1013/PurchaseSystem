@@ -15,6 +15,7 @@
     <ProjectReference Include="..\PurchaseSystem.Common\PurchaseSystem.Common.csproj" />
     <ProjectReference Include="..\PurchaseSystem.Core\PurchaseSystem.Core.csproj" />
     <ProjectReference Include="..\PurchaseSystem.Model\PurchaseSystem.Model.csproj" />
+    <ProjectReference Include="..\PurchaseSystem.Worker\PurchaseSystem.Worker.csproj" />
   </ItemGroup>
 
 </Project>

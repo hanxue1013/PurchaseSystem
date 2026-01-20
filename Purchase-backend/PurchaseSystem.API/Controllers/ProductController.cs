@@ -7,7 +7,7 @@ using PurchaseSystem.Model.Response;
 namespace PurchaseSystem.API.Controllers
 {
     /// <summary>
-    /// 商品相关（查询、列表）
+    /// 商品管理
     /// </summary>
     [ApiController]
     [Route("[controller]")]

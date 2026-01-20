@@ -6,6 +6,10 @@ using System.Text.Json.Serialization;
 
 namespace PurchaseSystem.Data.Repositories.Repository
 {
+    /// <summary>
+    /// 基础仓储
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class BaseRepository<T> : IRepository<T> where T : BaseEntity
     {
         protected readonly IDbConnection _connection;
@@ -19,7 +23,7 @@ namespace PurchaseSystem.Data.Repositories.Repository
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            var sql = $"SELECT * FROM {_tableName} ORDER BY Id DESC";
+            var sql = $"SELECT * FROM {_tableName} ORDER BY CreateTime DESC";
             return await _connection.QueryAsync<T>(sql);
         }
 
@@ -46,7 +50,7 @@ namespace PurchaseSystem.Data.Repositories.Repository
         public virtual async Task<bool> UpdateAsync(T entity)
         {
             var properties = typeof(T).GetProperties()
-                .Where(p => p.Name != "Id" && p.Name != "CreatedAt")
+                .Where(p => Attribute.IsDefined(p, typeof(JsonPropertyNameAttribute)))
                 .Select(p => $"{p.Name} = @{p.Name}");
 
             var setClause = string.Join(", ", properties);

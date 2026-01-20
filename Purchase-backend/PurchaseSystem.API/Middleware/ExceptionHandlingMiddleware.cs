@@ -1,5 +1,8 @@
 ﻿namespace PurchaseSystem.API.Middleware
 {
+    /// <summary>
+    /// 异常处理
+    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;

@@ -2,6 +2,10 @@
 
 namespace PurchaseSystem.Data.Repositories.IRepository
 {
+    /// <summary>
+    /// 通用仓储接口
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IRepository<T> where T : BaseEntity
     {
         Task<IEnumerable<T>> GetAllAsync();

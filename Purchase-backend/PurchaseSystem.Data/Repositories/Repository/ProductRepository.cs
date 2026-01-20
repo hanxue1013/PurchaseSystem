@@ -5,11 +5,12 @@ using Dapper;
 
 namespace PurchaseSystem.Data.Repositories.Repository
 {
+    /// <summary>
+    /// 商品仓储实现
+    /// </summary>
     public class ProductRepository : BaseRepository<PsProduct>, IProductRepository
     {
-        public ProductRepository(IDbConnection connection) : base(connection, "Ps_Products")
-        {
-        }
+        public ProductRepository(IDbConnection connection) : base(connection, "Ps_Products") { }
 
         public async Task<bool> UpdateStockAsync(int productId, int stock)
         {

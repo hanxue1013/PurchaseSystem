@@ -20,3 +20,20 @@ CREATE TABLE Ps_Products (
     CreateTime datetime DEFAULT GETDATE(),
 	UpdateTime datetime
 );
+
+-- ¶©µ¥±í
+CREATE TABLE Ps_Orders (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    OrderNo BIGINT NOT NULL UNIQUE,
+    UserId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT NOT NULL DEFAULT 1,
+    TotalAmount DECIMAL(10,2) NOT NULL,
+    Status INT NOT NULL DEFAULT 0,
+    CreateTime DATETIME2 DEFAULT GETDATE(),
+    PayTime DATETIME2 NULL,
+    TransactionId NVARCHAR(100) NULL,
+    
+    INDEX IX_OrderNo (OrderNo),
+    INDEX IX_UserId_Status (UserId, Status)
+);

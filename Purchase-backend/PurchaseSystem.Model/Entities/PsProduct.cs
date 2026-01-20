@@ -2,6 +2,9 @@
 
 namespace PurchaseSystem.Model.Entities
 {
+    /// <summary>
+    /// 商品实体
+    /// </summary>
     public class PsProduct : BaseEntity
     {
         [JsonPropertyName("productCode")]

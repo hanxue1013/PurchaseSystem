@@ -6,6 +6,9 @@ using PurchaseSystem.Model.Response;
 
 namespace PurchaseSystem.Core.Services.Service
 {
+    /// <summary>
+    /// 商品服务实现
+    /// </summary>
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
