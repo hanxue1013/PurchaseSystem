@@ -30,9 +30,9 @@ if requestCount > 3 then
 end
 
 -- ========== 2. 检查用户是否已购买 ==========
-if redis.call('SISMEMBER', userBoughtKey, productId) == 1 then
-    return '{"success":0, "code":"ALREADY_BOUGHT", "msg":"您已购买过此商品"}'
-end
+--if redis.call('SISMEMBER', userBoughtKey, productId) == 1 then
+--    return '{"success":0, "code":"ALREADY_BOUGHT", "msg":"您已购买过此商品"}'
+--end
 
 -- ========== 3. 检查用户购买额度 ==========
 local maxQuota = 8
@@ -60,7 +60,7 @@ if isHot == '1' and shardCount > 1 then
     local shardIndex = math.random(1, shardCount)
     stockKey = "stock:" .. productId .. ":" .. shardIndex
 end
-
+--扣减库存
 local remaining = redis.call('DECR', stockKey)
 if remaining < 0 then
     redis.call('INCR', stockKey)  -- 恢复库存
@@ -72,20 +72,18 @@ redis.call('SADD', userBoughtKey, productId)
 redis.call('EXPIRE', userBoughtKey, 86400)  -- 24小时过期
 
 -- ========== 7. 缓存订单信息 ==========
-redis.call('HSET', orderKey, 
-    'userId', userId,
-    'productId', productId,
-    'price', price,
-    'status', '0',  -- 0=待支付
-    'createTime', timestamp,
-    'expireTime', timestamp + 900000  -- 15分钟后过期（毫秒）
-)
+local expireTimeMs = tonumber(timestamp) + 900000  -- 15分钟 = 900,000毫秒
+redis.call('HSET', orderKey, 'userId', userId)
+redis.call('HSET', orderKey, 'productId', productId)
+redis.call('HSET', orderKey, 'price', price)
+redis.call('HSET', orderKey, 'status', '0')
+redis.call('HSET', orderKey, 'userType', userType)
+
 redis.call('EXPIRE', orderKey, 900)  -- 15分钟
 
 -- ========== 8. 加入超时队列（Sorted Set） ==========
 -- Sorted Set的score是过期时间戳，value是订单号
-local expireTime = tonumber(timestamp) + 900000  -- 当前时间 + 15分钟
-redis.call('ZADD', timeoutQueueKey, expireTime, orderNo)
+redis.call('ZADD', timeoutQueueKey, expireTimeMs, orderNo)
 
 -- ========== 9. 加入异步处理队列（List） ==========
 -- 将订单信息JSON推入List，供后台Worker处理

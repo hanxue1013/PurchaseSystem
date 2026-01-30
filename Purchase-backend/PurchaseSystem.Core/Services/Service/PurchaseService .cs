@@ -17,12 +17,10 @@ namespace PurchaseSystem.Core.Services.Service
     public class PurchaseService : IPurchaseService
     {
         private readonly IRedisService _redisService;
-        private readonly ILogger<PurchaseService> _logger;
 
-        public PurchaseService(IRedisService redisService, ILogger<PurchaseService> logger)
+        public PurchaseService(IRedisService redisService)
         {
             _redisService = redisService;
-            _logger = logger;
         }
 
         // 商品信息本地缓存（减少Redis访问）
@@ -36,6 +34,20 @@ namespace PurchaseSystem.Core.Services.Service
                 // 基础校验
                 if (userId <= 0 || productId <= 0)
                     return ApiResponse.Error("参数无效");
+
+                // 获取用户类型
+                if (!_userTypeCache.TryGetValue(userId, out var userType))
+                {
+                    userType = await GetUserTypeFromCacheAsync(userId);
+                    if (userType != -1)
+                    {
+                        _userTypeCache.TryAdd(userId, userType);
+                    }
+                    else
+                    {
+                        return ApiResponse.Error("当前非有效用户");
+                    }
+                }
 
                 // 从本地缓存获取商品信息
                 if (!_productCache.TryGetValue(productId, out var productCache))
@@ -54,13 +66,6 @@ namespace PurchaseSystem.Core.Services.Service
                 if (productCache.Status != 1)
                     return ApiResponse.Error("商品已下架");
 
-                // 获取用户类型
-                if (!_userTypeCache.TryGetValue(userId, out var userType))
-                {
-                    userType = await GetUserTypeFromCacheAsync(userId);
-                    _userTypeCache.TryAdd(userId, userType);
-                }
-
                 // 执行Redis Lua脚本（核心：原子操作，一次网络往返）
                 var redisResult = await _redisService.DeductStockAsync(userId, productId, userType, DateTime.Now, productCache.Price);
 
@@ -68,7 +73,7 @@ namespace PurchaseSystem.Core.Services.Service
                     return ApiResponse.Error(redisResult.ErrorCode, redisResult.Message);
 
                 // 记录日志
-                _logger.LogInformation("抢购成功: OrderNo={OrderNo}, UserId={UserId}, ProductId={ProductId}", redisResult.OrderNo, userId, productId);
+                Console.WriteLine("抢购成功: OrderNo={OrderNo}, UserId={UserId}, ProductId={ProductId}", redisResult.OrderNo, userId, productId);
 
                 return ApiResponse.Success(
                     new
@@ -110,10 +115,12 @@ namespace PurchaseSystem.Core.Services.Service
             var userType = await _redisService.StringGetAsync($"user:type:{userId}");
             if (userType.HasValue && int.TryParse(userType, out var type))
                 return type;
+            else
+                return -1;
 
             // 2. Redis没有，从数据库获取（应该很少发生）
             // 这里简化处理，实际应从用户服务获取
-            return userId % 2 == 1 ? 1 : 2; // 假设规则
+            //return userId % 2 == 1 ? 1 : 2; // 假设规则
         }
     }
 }

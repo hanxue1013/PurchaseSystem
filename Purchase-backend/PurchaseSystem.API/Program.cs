@@ -34,7 +34,6 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddSingleton<IRedisService>(sp =>
     new RedisService(builder.Configuration.GetConnectionString("RedisConnection")));
 
-
 // 注册业务服务
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IPurchaseService, PurchaseService>();

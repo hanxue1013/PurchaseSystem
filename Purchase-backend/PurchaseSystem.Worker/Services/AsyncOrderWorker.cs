@@ -10,14 +10,18 @@ namespace PurchaseSystem.Worker.Services
 {
     public class AsyncOrderWorker : BackgroundService
     {
-        private readonly ILogger<AsyncOrderWorker> _logger;
         private readonly IRedisService _redisService;
         private readonly IOrderRepository _orderRepository;
-        private readonly IServiceProvider _serviceProvider;
+
+        public AsyncOrderWorker(IRedisService redisService)
+        {
+            _redisService = redisService;
+        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("异步订单处理Worker启动");
+
+            Console.WriteLine("异步订单处理Worker启动");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -37,7 +41,7 @@ namespace PurchaseSystem.Worker.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "异步处理异常");
+                    Console.WriteLine("异步处理异常:{Message}", ex.Message);
                     await Task.Delay(5000, stoppingToken); // 异常后等待5秒
                 }
             }
@@ -70,11 +74,11 @@ namespace PurchaseSystem.Worker.Services
                     // 写入数据库
                     await _orderRepository.AddAsync(order);
 
-                    _logger.LogInformation("异步创建订单成功: OrderNo={OrderNo}", orderData.OrderNo);
+                    Console.WriteLine("异步创建订单成功: OrderNo={OrderNo}", orderData.OrderNo);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "异步创建订单失败: OrderJson={OrderJson}", orderJson);
+                    Console.WriteLine("异步创建订单失败: OrderJson={OrderJson}" + ex.Message, orderJson);
                     // 可以加入重试队列
                 }
             }
@@ -93,12 +97,12 @@ namespace PurchaseSystem.Worker.Services
                         var result = await _redisService.ProcessTimeoutOrderAsync(orderNo);
                         if (result.Success)
                         {
-                            _logger.LogInformation("超时订单处理成功: OrderNo={OrderNo}", orderNo);
+                            Console.WriteLine("超时订单处理成功: OrderNo={OrderNo}", orderNo);
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "超时订单处理失败: OrderNo={OrderNo}", orderNo);
+                        Console.WriteLine("超时订单处理失败: OrderNo={OrderNo} ERROR:" + ex.Message, orderNo);
                     }
                 }
             }
@@ -120,13 +124,13 @@ namespace PurchaseSystem.Worker.Services
 
                     if (result.Success)
                     {
-                        _logger.LogInformation("库存恢复成功: ProductId={ProductId}, OrderNo={OrderNo}",
+                        Console.WriteLine("库存恢复成功: ProductId={ProductId}, OrderNo={OrderNo}",
                             taskData.ProductId, taskData.OrderNo);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "库存恢复失败: TaskJson={TaskJson}", taskJson);
+                    Console.WriteLine("库存恢复失败: TaskJson={TaskJson} ERROR:", taskJson);
                 }
             }
         }

@@ -15,9 +15,9 @@ namespace PurchaseSystem.Data.Redis.Services
         private readonly IDatabase _db;
         private readonly IServer _server;
 
-        private readonly Lazy<LoadedLuaScript> _purchaseScript;
-        private readonly Lazy<LoadedLuaScript> _timeoutScript;
-        private readonly Lazy<LoadedLuaScript> _restoreScript;
+        private readonly string _purchaseScript;
+        private readonly string _timeoutScript;
+        private readonly string _restoreScript;
 
         // 常量定义（Lua脚本）
         private const string PURCHASE_SCRIPT = "purchase_enhanced.lua";
@@ -30,19 +30,9 @@ namespace PurchaseSystem.Data.Redis.Services
             _db = _redis.GetDatabase();
             _server = _redis.GetServer(_redis.GetEndPoints()[0]);
 
-            string purchaseLua = LuaScriptReader.GetLuaScript(PURCHASE_SCRIPT);
-            string orderLua = LuaScriptReader.GetLuaScript(TIMEOUT_SCRIPT);
-            string stockLua = LuaScriptReader.GetLuaScript(RESTORE_SCRIPT);
-
-            // 预编译Lua脚本
-            _purchaseScript = new Lazy<LoadedLuaScript>(() =>
-                LuaScript.Prepare(purchaseLua).Load(_server));
-
-            _timeoutScript = new Lazy<LoadedLuaScript>(() =>
-                LuaScript.Prepare(orderLua).Load(_server));
-
-            _restoreScript = new Lazy<LoadedLuaScript>(() =>
-                LuaScript.Prepare(stockLua).Load(_server));
+            _purchaseScript = LuaScriptReader.GetLuaScript(PURCHASE_SCRIPT);
+            _timeoutScript = LuaScriptReader.GetLuaScript(TIMEOUT_SCRIPT);
+            _restoreScript = LuaScriptReader.GetLuaScript(RESTORE_SCRIPT);
         }
 
         #region 基本操作
@@ -114,8 +104,7 @@ namespace PurchaseSystem.Data.Redis.Services
                 long orderNo = GenerateOrderNo();
                 var timestamp = now.Ticks;
 
-                var script = _purchaseScript.Value.ExecutableScript;
-                var result = await _db.ScriptEvaluateAsync(script,
+                var result = await _db.ScriptEvaluateAsync(_purchaseScript,
                     values: new RedisValue[]
                     {
                         userId, productId, userType, timestamp, orderNo, price.ToString("F2")
@@ -143,8 +132,7 @@ namespace PurchaseSystem.Data.Redis.Services
         // 处理超时订单
         public async Task<RedisTimeoutResult> ProcessTimeoutOrderAsync(long orderNo)
         {
-            var script = _timeoutScript.Value.ExecutableScript;
-            var result = await _db.ScriptEvaluateAsync(script,
+            var result = await _db.ScriptEvaluateAsync(_timeoutScript,
                 values: new RedisValue[] { orderNo, DateTime.Now.Ticks });
 
             return JsonSerializer.Deserialize<RedisTimeoutResult>(result.ToString());
@@ -153,8 +141,7 @@ namespace PurchaseSystem.Data.Redis.Services
         // 恢复库存
         public async Task<RedisRestoreResult> RestoreStockAsync(int productId, long orderNo)
         {
-            var script = _restoreScript.Value.ExecutableScript;
-            var result = await _db.ScriptEvaluateAsync(script,
+            var result = await _db.ScriptEvaluateAsync(_restoreScript,
                 values: new RedisValue[] { productId, orderNo });
 
             return JsonSerializer.Deserialize<RedisRestoreResult>(result.ToString());
