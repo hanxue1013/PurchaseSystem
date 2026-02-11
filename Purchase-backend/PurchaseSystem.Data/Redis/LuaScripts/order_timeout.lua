@@ -1,62 +1,62 @@
--- ÎÄ¼şÃû: order_timeout.lua
--- ¹¦ÄÜ£º´¦Àí³¬Ê±¶©µ¥£¬ÊÍ·Å¿â´æ
--- ²ÎÊı£ºorderNo, currentTimestamp
--- ·µ»Ø£º´¦Àí½á¹ûJSON
+-- æ–‡ä»¶å: order_timeout.lua
+-- åŠŸèƒ½ï¼šå¤„ç†è¶…æ—¶è®¢å•ï¼Œé‡Šæ”¾åº“å­˜
+-- å‚æ•°ï¼šorderNo, currentTimestamp
+-- è¿”å›ï¼šå¤„ç†ç»“æœJSON
 
 local orderNo = ARGV[1]
 local currentTimestamp = tonumber(ARGV[2])
 
--- ========== ¼ü¶¨Òå ==========
+-- ========== é”®å®šä¹‰ ==========
 local orderKey = "order:" .. orderNo
 local timeoutQueueKey = "queue:order:timeout"
-local stockRestoreQueueKey = "queue:stock:restore"  -- ¿â´æ»Ö¸´¶ÓÁĞ
+local stockRestoreQueueKey = "queue:stock:restore"  -- åº“å­˜æ¢å¤é˜Ÿåˆ—
 
--- ========== 1. »ñÈ¡¶©µ¥ĞÅÏ¢ ==========
+-- ========== 1. è·å–è®¢å•ä¿¡æ¯ ==========
 local orderData = redis.call('HGETALL', orderKey)
 if #orderData == 0 then
-    return '{"success":0, "msg":"¶©µ¥²»´æÔÚ"}'
+    return '{"success":0, "msg":"è®¢å•ä¸å­˜åœ¨"}'
 end
 
--- ½âÎö¶©µ¥ĞÅÏ¢
+-- è§£æè®¢å•ä¿¡æ¯
 local orderInfo = {}
 for i = 1, #orderData, 2 do
     orderInfo[orderData[i]] = orderData[i+1]
 end
 
--- ========== 2. ¼ì²é¶©µ¥×´Ì¬ ==========
+-- ========== 2. æ£€æŸ¥è®¢å•çŠ¶æ€ ==========
 local status = orderInfo['status']
-if status ~= '0' then  -- ²»ÊÇ´ıÖ§¸¶×´Ì¬
-    -- ´Ó³¬Ê±¶ÓÁĞÒÆ³ı
+if status ~= '0' then  -- ä¸æ˜¯å¾…æ”¯ä»˜çŠ¶æ€
+    -- ä»è¶…æ—¶é˜Ÿåˆ—ç§»é™¤
     redis.call('ZREM', timeoutQueueKey, orderNo)
-    return '{"success":0, "msg":"¶©µ¥×´Ì¬²»ÊÇ´ıÖ§¸¶"}'
+    return '{"success":0, "msg":"è®¢å•çŠ¶æ€ä¸æ˜¯å¾…æ”¯ä»˜"}'
 end
 
--- ========== 3. ¼ì²éÊÇ·ñÕæµÄ³¬Ê± ==========
+-- ========== 3. æ£€æŸ¥æ˜¯å¦çœŸçš„è¶…æ—¶ ==========
 local expireTime = tonumber(orderInfo['expireTime'])
 if expireTime > currentTimestamp then
-    return '{"success":0, "msg":"¶©µ¥ÉĞÎ´³¬Ê±"}'
+    return '{"success":0, "msg":"è®¢å•å°šæœªè¶…æ—¶"}'
 end
 
--- ========== 4. ¸üĞÂ¶©µ¥×´Ì¬Îª³¬Ê± ==========
-redis.call('HSET', orderKey, 'status', '3')  -- 3=³¬Ê±¹Ø±Õ
-redis.call('EXPIRE', orderKey, 3600)  -- ÉèÖÃ1Ğ¡Ê±¹ıÆÚ£¬Áô¸ø¶ÔÕË
+-- ========== 4. æ›´æ–°è®¢å•çŠ¶æ€ä¸ºè¶…æ—¶ ==========
+redis.call('HSET', orderKey, 'status', '3')  -- 3=è¶…æ—¶å…³é—­
+redis.call('EXPIRE', orderKey, 3600)  -- è®¾ç½®1å°æ—¶è¿‡æœŸï¼Œç•™ç»™å¯¹è´¦
 
--- ========== 5. ´ÓÓÃ»§¹ºÂò¼ÇÂ¼ÖĞÒÆ³ı ==========
+-- ========== 5. ä»ç”¨æˆ·è´­ä¹°è®°å½•ä¸­ç§»é™¤ ==========
 local userId = orderInfo['userId']
 local productId = orderInfo['productId']
 local userBoughtKey = "purchase:user:" .. userId .. ":products"
 redis.call('SREM', userBoughtKey, productId)
 
--- ========== 6. ÊÍ·Å¿â´æ£¨¼ÓÈë»Ö¸´¶ÓÁĞ£© ==========
--- ×¢Òâ£ºÕâÀï²»Ö±½Ó»Ö¸´¿â´æ£¬¶øÊÇ¼ÓÈë¶ÓÁĞ£¬·ÀÖ¹¸ß²¢·¢Ê±¿â´æ²»Ò»ÖÂ
+-- ========== 6. é‡Šæ”¾åº“å­˜ï¼ˆåŠ å…¥æ¢å¤é˜Ÿåˆ—ï¼‰ ==========
+-- æ³¨æ„ï¼šè¿™é‡Œä¸ç›´æ¥æ¢å¤åº“å­˜ï¼Œè€Œæ˜¯åŠ å…¥é˜Ÿåˆ—ï¼Œé˜²æ­¢é«˜å¹¶å‘æ—¶åº“å­˜ä¸ä¸€è‡´
 local restoreData = '{"productId":' .. productId .. ',"orderNo":"' .. orderNo .. '","timestamp":' .. currentTimestamp .. '}'
 redis.call('LPUSH', stockRestoreQueueKey, restoreData)
 
--- ========== 7. ´Ó³¬Ê±¶ÓÁĞÖĞÒÆ³ı ==========
+-- ========== 7. ä»è¶…æ—¶é˜Ÿåˆ—ä¸­ç§»é™¤ ==========
 redis.call('ZREM', timeoutQueueKey, orderNo)
 
--- ========== 8. ¼ÇÂ¼´¦ÀíÈÕÖ¾ ==========
+-- ========== 8. è®°å½•å¤„ç†æ—¥å¿— ==========
 local logKey = "log:order:timeout:" .. os.date("%Y%m%d")
 redis.call('LPUSH', logKey, orderNo)
 
-return '{"success":1, "msg":"¶©µ¥³¬Ê±´¦Àí³É¹¦", "orderNo":"' .. orderNo .. '", "productId":' .. productId .. '}'
+return '{"success":1, "msg":"è®¢å•è¶…æ—¶å¤„ç†æˆåŠŸ", "orderNo":"' .. orderNo .. '", "productId":' .. productId .. '}'

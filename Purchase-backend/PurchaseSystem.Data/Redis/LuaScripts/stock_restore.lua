@@ -1,30 +1,30 @@
--- ÎÄ¼şÃû: stock_restore.lua
--- ¹¦ÄÜ£º°²È«»Ö¸´¿â´æ
--- ²ÎÊı£ºproductId, orderNo
+-- æ–‡ä»¶å: stock_restore.lua
+-- åŠŸèƒ½ï¼šå®‰å…¨æ¢å¤åº“å­˜
+-- å‚æ•°ï¼šproductId, orderNo
 
 local productId = ARGV[1]
 local orderNo = ARGV[2]
 
--- ========== ¼ü¶¨Òå ==========
+-- ========== é”®å®šä¹‰ ==========
 local productKey = "product:info:" .. productId
 local stockKey = "stock:" .. productId
 
--- ========== 1. ¼ì²éÉÌÆ·ĞÅÏ¢ ==========
+-- ========== 1. æ£€æŸ¥å•†å“ä¿¡æ¯ ==========
 local isHot = redis.call('HGET', productKey, 'isHot')
 local shardCount = tonumber(redis.call('HGET', productKey, 'shardCount')) or 1
 
--- ========== 2. »Ö¸´¿â´æ ==========
+-- ========== 2. æ¢å¤åº“å­˜ ==========
 if isHot == '1' and shardCount > 1 then
-    -- ÈÈÃÅÉÌÆ·£ºËæ»úÑ¡ÔñÒ»¸ö·ÖÆ¬»Ö¸´
+    -- çƒ­é—¨å•†å“ï¼šéšæœºé€‰æ‹©ä¸€ä¸ªåˆ†ç‰‡æ¢å¤
     local shardIndex = math.random(1, shardCount)
     stockKey = "stock:" .. productId .. ":" .. shardIndex
 end
 
--- Ô­×ÓĞÔÔö¼Ó¿â´æ
+-- åŸå­æ€§å¢åŠ åº“å­˜
 redis.call('INCR', stockKey)
 
--- ========== 3. ¼ÇÂ¼¿â´æ»Ö¸´ÈÕÖ¾ ==========
+-- ========== 3. è®°å½•åº“å­˜æ¢å¤æ—¥å¿— ==========
 local logKey = "log:stock:restore:" .. os.date("%Y%m%d")
 redis.call('LPUSH', logKey, '{"productId":' .. productId .. ',"orderNo":"' .. orderNo .. '","time":"' .. os.date("%Y-%m-%d %H:%M:%S") .. '"}')
 
-return '{"success":1, "msg":"¿â´æ»Ö¸´³É¹¦", "productId":' .. productId .. ', "orderNo":"' .. orderNo .. '"}'
+return '{"success":1, "msg":"åº“å­˜æ¢å¤æˆåŠŸ", "productId":' .. productId .. ', "orderNo":"' .. orderNo .. '"}'

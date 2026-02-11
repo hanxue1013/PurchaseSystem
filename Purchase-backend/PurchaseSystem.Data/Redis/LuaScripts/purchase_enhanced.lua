@@ -1,9 +1,9 @@
--- ÎÄ¼şÃû: purchase_enhanced.lua
--- ¹¦ÄÜ£ºÇÀ¹ºÉÌÆ·£¨Ô­×Ó²Ù×÷£©
--- ²ÎÊı£ºuserId, productId, userType, timestamp, orderNo, price
--- ·µ»Ø£ºJSON×Ö·û´® {success:1/0, orderNo:xxx, msg:"xxx"}
+-- æ–‡ä»¶å: purchase_enhanced.lua
+-- åŠŸèƒ½ï¼šæŠ¢è´­å•†å“ï¼ˆåŸå­æ“ä½œï¼‰
+-- å‚æ•°ï¼šuserId, productId, userType, timestamp, orderNo, price
+-- è¿”å›ï¼šJSONå­—ç¬¦ä¸² {success:1/0, orderNo:xxx, msg:"xxx"}
 
--- ========== ²ÎÊı½âÎö ==========
+-- ========== å‚æ•°è§£æ ==========
 local userId = ARGV[1]
 local productId = ARGV[2]
 local userType = ARGV[3]
@@ -11,84 +11,93 @@ local timestamp = ARGV[4]
 local orderNo = ARGV[5]
 local price = ARGV[6]
 
--- ========== ¼ü¶¨Òå ==========
+-- ========== é”®å®šä¹‰ ==========
 local userBoughtKey = "purchase:user:" .. userId .. ":products"
 local rateLimitKey = "rate:user:" .. userId .. ":" .. math.floor(timestamp/1000)
 local productKey = "product:info:" .. productId
-local stockKey = "stock:" .. productId  -- Ä¬ÈÏ¼ü
+local stockKey = "stock:" .. productId  -- é»˜è®¤é”®
 local orderKey = "order:" .. orderNo
-local timeoutQueueKey = "queue:order:timeout"  -- ³¬Ê±¶ÓÁĞ£¨Sorted Set£©
-local asyncQueueKey = "queue:order:async"      -- Òì²½´¦Àí¶ÓÁĞ£¨List£©
+local timeoutQueueKey = "queue:order:timeout"  -- è¶…æ—¶é˜Ÿåˆ—ï¼ˆSorted Setï¼‰
+local asyncQueueKey = "queue:order:async"      -- å¼‚æ­¥å¤„ç†é˜Ÿåˆ—ï¼ˆListï¼‰
 
--- ========== 1. ÏŞÁ÷¼ì²é ==========
+-- ========== 1. é™æµæ£€æŸ¥ ==========
 local requestCount = redis.call('INCR', rateLimitKey)
 if requestCount == 1 then
     redis.call('EXPIRE', rateLimitKey, 1)
 end
 if requestCount > 3 then
-    return '{"success":0, "code":"RATE_LIMIT", "msg":"ÇëÇó¹ıÓÚÆµ·±"}'
+    return '{"success":0, "code":"RATE_LIMIT", "msg":"è¯·æ±‚è¿‡äºé¢‘ç¹"}'
 end
 
--- ========== 2. ¼ì²éÓÃ»§ÊÇ·ñÒÑ¹ºÂò ==========
+-- ========== 2. æ£€æŸ¥ç”¨æˆ·æ˜¯å¦å·²è´­ä¹° ==========
 --if redis.call('SISMEMBER', userBoughtKey, productId) == 1 then
---    return '{"success":0, "code":"ALREADY_BOUGHT", "msg":"ÄúÒÑ¹ºÂò¹ı´ËÉÌÆ·"}'
+--    return '{"success":0, "code":"ALREADY_BOUGHT", "msg":"æ‚¨å·²è´­ä¹°è¿‡æ­¤å•†å“"}'
 --end
 
--- ========== 3. ¼ì²éÓÃ»§¹ºÂò¶î¶È ==========
+-- ========== 3. æ£€æŸ¥ç”¨æˆ·è´­ä¹°é¢åº¦ ==========
 local maxQuota = 8
 if userType == '2' then
     maxQuota = 2
 end
 local userPurchasedCount = redis.call('SCARD', userBoughtKey)
 if userPurchasedCount >= maxQuota then
-    return '{"success":0, "code":"QUOTA_LIMIT", "msg":"ÄúµÄ¹ºÂò¶î¶ÈÒÑÓÃÍê"}'
+    return '{"success":0, "code":"QUOTA_LIMIT", "msg":"æ‚¨çš„è´­ä¹°é¢åº¦å·²ç”¨å®Œ"}'
 end
 
--- ========== 4. ÉÌÆ·×´Ì¬¼ì²é ==========
+-- ========== 4. å•†å“çŠ¶æ€æ£€æŸ¥ ==========
 local productStatus = redis.call('HGET', productKey, 'status')
 if not productStatus or productStatus ~= '1' then
-    return '{"success":0, "code":"PRODUCT_INVALID", "msg":"ÉÌÆ·ÒÑÏÂ¼Ü"}'
+    return '{"success":0, "code":"PRODUCT_INVALID", "msg":"å•†å“å·²ä¸‹æ¶"}'
 end
 
--- ========== 5. ¿â´æ¿Û¼õ ==========
--- ÅĞ¶ÏÊÇ·ñÈÈÃÅÉÌÆ·£¨·ÖÆ¬´æ´¢£©
+-- ========== 5. åº“å­˜æ‰£å‡ ==========
+-- åˆ¤æ–­æ˜¯å¦çƒ­é—¨å•†å“ï¼ˆåˆ†ç‰‡å­˜å‚¨ï¼‰
 local isHot = redis.call('HGET', productKey, 'isHot')
 local shardCount = tonumber(redis.call('HGET', productKey, 'shardCount')) or 1
 
 if isHot == '1' and shardCount > 1 then
-    -- ÈÈÃÅÉÌÆ·£ºËæ»úÑ¡ÔñÒ»¸ö·ÖÆ¬
+    -- çƒ­é—¨å•†å“ï¼šéšæœºé€‰æ‹©ä¸€ä¸ªåˆ†ç‰‡
     local shardIndex = math.random(1, shardCount)
     stockKey = "stock:" .. productId .. ":" .. shardIndex
 end
---¿Û¼õ¿â´æ
+--æ‰£å‡åº“å­˜
 local remaining = redis.call('DECR', stockKey)
 if remaining < 0 then
-    redis.call('INCR', stockKey)  -- »Ö¸´¿â´æ
-    return '{"success":0, "code":"STOCK_OUT", "msg":"¿â´æ²»×ã"}'
+    redis.call('INCR', stockKey)  -- æ¢å¤åº“å­˜
+    return '{"success":0, "code":"STOCK_OUT", "msg":"åº“å­˜ä¸è¶³"}'
 end
 
--- ========== 6. ¼ÇÂ¼ÓÃ»§¹ºÂò ==========
+-- ========== 6. è®°å½•ç”¨æˆ·è´­ä¹° ==========
 redis.call('SADD', userBoughtKey, productId)
-redis.call('EXPIRE', userBoughtKey, 86400)  -- 24Ğ¡Ê±¹ıÆÚ
+redis.call('EXPIRE', userBoughtKey, 86400)  -- 24å°æ—¶è¿‡æœŸ
 
--- ========== 7. »º´æ¶©µ¥ĞÅÏ¢ ==========
-local expireTimeMs = tonumber(timestamp) + 900000  -- 15·ÖÖÓ = 900,000ºÁÃë
+-- ========== 7. ç¼“å­˜è®¢å•ä¿¡æ¯ ==========
+local expireTimeMs = tonumber(timestamp) + 900000  -- 15åˆ†é’Ÿ = 900,000æ¯«ç§’
 redis.call('HSET', orderKey, 'userId', userId)
 redis.call('HSET', orderKey, 'productId', productId)
 redis.call('HSET', orderKey, 'price', price)
 redis.call('HSET', orderKey, 'status', '0')
+redis.call('HSET', orderKey, 'createTime', timestamp)
+redis.call('HSET', orderKey, 'expireTime', expireTimeMs)
 redis.call('HSET', orderKey, 'userType', userType)
 
-redis.call('EXPIRE', orderKey, 900)  -- 15·ÖÖÓ
+redis.call('EXPIRE', orderKey, 900)  -- 15åˆ†é’Ÿ
 
--- ========== 8. ¼ÓÈë³¬Ê±¶ÓÁĞ£¨Sorted Set£© ==========
--- Sorted SetµÄscoreÊÇ¹ıÆÚÊ±¼ä´Á£¬valueÊÇ¶©µ¥ºÅ
+-- ========== 8. åŠ å…¥è¶…æ—¶é˜Ÿåˆ—ï¼ˆSorted Setï¼‰ ==========
+-- Sorted Setçš„scoreæ˜¯è¿‡æœŸæ—¶é—´æˆ³ï¼Œvalueæ˜¯è®¢å•å·
 redis.call('ZADD', timeoutQueueKey, expireTimeMs, orderNo)
 
--- ========== 9. ¼ÓÈëÒì²½´¦Àí¶ÓÁĞ£¨List£© ==========
--- ½«¶©µ¥ĞÅÏ¢JSONÍÆÈëList£¬¹©ºóÌ¨Worker´¦Àí
-local orderDataJson = '{"orderNo":"' .. orderNo .. '","userId":' .. userId .. ',"productId":' .. productId .. ',"price":' .. price .. '}'
+-- ========== 9. åŠ å…¥å¼‚æ­¥å¤„ç†é˜Ÿåˆ—ï¼ˆListï¼‰ ==========
+-- å°†è®¢å•ä¿¡æ¯JSONæ¨å…¥Listï¼Œä¾›åå°Workerå¤„ç†
+--local orderDataJson = '{"orderNo":"' .. orderNo .. '","userId":' .. userId .. ',"productId":' .. productId .. ',"price":' .. price .. '}'
+--redis.call('LPUSH', asyncQueueKey, orderDataJson)
+local function escape_json(str)
+    return string.gsub(str, '"', '\\"')
+end
+local orderDataJson = '{"orderNo":"' .. escape_json(orderNo) .. '","userId":"' .. 
+                     escape_json(userId) .. '","productId":"' .. escape_json(productId) .. 
+                     '","price":' .. price .. '}'
 redis.call('LPUSH', asyncQueueKey, orderDataJson)
 
--- ========== 10. ·µ»Ø³É¹¦ ==========
-return '{"success":1, "orderNo":"' .. orderNo .. '", "price":' .. price .. ', "msg":"ÇÀ¹º³É¹¦"}'
+-- ========== 10. è¿”å›æˆåŠŸ ==========
+return '{"success":1, "orderNo":"' .. orderNo .. '", "price":' .. price .. ', "msg":"æŠ¢è´­æˆåŠŸ","code":"200"}'

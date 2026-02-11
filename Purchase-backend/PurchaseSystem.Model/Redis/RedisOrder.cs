@@ -37,7 +37,7 @@
     {
         public int success { get; set; }
         public string orderNo { get; set; }
-        public string price { get; set; }
+        public decimal? price { get; set; }
         public string msg { get; set; }
         public string code { get; set; }
     }

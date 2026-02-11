@@ -31,8 +31,17 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 //  注册Redis服务
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("RedisConnection");
+    return ConnectionMultiplexer.Connect(connectionString);
+});
 builder.Services.AddSingleton<IRedisService>(sp =>
-    new RedisService(builder.Configuration.GetConnectionString("RedisConnection")));
+{
+    var multiplexer = sp.GetRequiredService<IConnectionMultiplexer>();
+    var database = multiplexer.GetDatabase();
+    return new RedisService(database);
+});
 
 // 注册业务服务
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -53,6 +62,22 @@ builder.Services.AddCors(options =>
 builder.Services.AddHostedService<AsyncOrderWorker>();
 
 var app = builder.Build();
+
+// 全局捕获未处理异常（对于控制台、后台线程等）
+AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+{
+    var exception = e.ExceptionObject as Exception;
+    File.WriteAllText($"./crash_{DateTime.Now:yyyyMMdd_HHmmss}.log",
+        $"【致命未处理异常】{DateTime.Now}\n异常类型: {exception?.GetType().FullName}\n异常信息: {exception?.Message}\n堆栈跟踪:\n{exception?.StackTrace}\n\n");
+};
+
+// 全局捕获特定于任务的未处理异常（async/await）
+TaskScheduler.UnobservedTaskException += (sender, e) =>
+{
+    File.WriteAllText($"./task_crash_{DateTime.Now:yyyyMMdd_HHmmss}.log",
+        $"【未观察到的任务异常】{DateTime.Now}\n异常信息: {e.Exception.Message}\n堆栈跟踪:\n{e.Exception.StackTrace}\n\n");
+    e.SetObserved(); // 标记为已观察，防止进程终止
+};
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

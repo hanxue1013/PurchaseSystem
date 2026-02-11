@@ -54,9 +54,7 @@ namespace PurchaseSystem.Core.Services.Service
                 {
                     // 如果缓存没有，从Redis获取并缓存
                     productCache = await GetProductFromRedisAsync(productId);
-                    if (productCache == null)
-                        return ApiResponse.Error("商品不存在");
-                    if (productCache.Price <= 0)
+                    if (productCache == null || productCache.Price <= 0)
                         return ApiResponse.Error("商品不存在");
 
                     _productCache.TryAdd(productId, productCache);
@@ -72,13 +70,10 @@ namespace PurchaseSystem.Core.Services.Service
                 if (!redisResult.Success)
                     return ApiResponse.Error(redisResult.ErrorCode, redisResult.Message);
 
-                // 记录日志
-                Console.WriteLine("抢购成功: OrderNo={OrderNo}, UserId={UserId}, ProductId={ProductId}", redisResult.OrderNo, userId, productId);
-
                 return ApiResponse.Success(
                     new
                     {
-                        OrderNo = redisResult.OrderNo,
+                        redisResult.OrderNo,
                         Amount = productCache.Price,
                     }, "抢购成功，请在15分钟内完成支付");
             }

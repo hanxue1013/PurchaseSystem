@@ -27,17 +27,25 @@ namespace PurchaseSystem.API.Controllers
                 return Ok(ApiResponse.Error("参数无效"));
             }
 
-            // 限流检查（可以放在中间件中）
-            var result = await _purchaseService.GrabProductAsync(request.UserId, request.ProductId);
+            try
+            {
+                // 限流检查（可以放在中间件中）
+                var result = await _purchaseService.GrabProductAsync(request.UserId, request.ProductId);
 
-            if (result.IsSuccess)
-            {
-                return Ok(ApiResponse.Success(result, "抢购成功"));
+                if (result.IsSuccess)
+                {
+                    return Ok(ApiResponse.Success(result, "抢购成功"));
+                }
+                else
+                {
+                    return Ok(ApiResponse.Error(result.Message));
+                }
             }
-            else
+            catch (Exception e)
             {
-                return Ok(ApiResponse.Error(result.Message));
+                return Ok(ApiResponse.Error(e.Message));
             }
+
         }
     }
 }

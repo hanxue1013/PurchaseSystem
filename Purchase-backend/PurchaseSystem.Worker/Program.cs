@@ -1,19 +1,23 @@
 ﻿// RedisConnectionTest.cs
+using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
-using System;
-using System.Threading.Tasks;
 
 class Program
 {
     static async Task Main()
     {
-        var connectionString = "localhost:6379,abortConnect=false,syncTimeout=5000,connectTimeout=5000";
-
         Console.WriteLine("测试Redis连接...");
 
         try
         {
-            var redis = await ConnectionMultiplexer.ConnectAsync(connectionString);
+            // 构建配置
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory()) // 设置基础路径为当前目录
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
+
+            // 读取连接字符串
+            var redis = await ConnectionMultiplexer.ConnectAsync(configuration.GetConnectionString("RedisConnection"));
             var db = redis.GetDatabase();
 
             // 简单测试

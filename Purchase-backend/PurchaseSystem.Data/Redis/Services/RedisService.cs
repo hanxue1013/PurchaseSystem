@@ -11,7 +11,6 @@ namespace PurchaseSystem.Data.Redis.Services
     /// </summary>
     public class RedisService : IRedisService
     {
-        private readonly ConnectionMultiplexer _redis;
         private readonly IDatabase _db;
         private readonly IServer _server;
 
@@ -24,11 +23,12 @@ namespace PurchaseSystem.Data.Redis.Services
         private const string TIMEOUT_SCRIPT = "order_timeout.lua";
         private const string RESTORE_SCRIPT = "stock_restore.lua";
 
-        public RedisService(string connectionString)
+        public RedisService(IDatabase redisDatabase)
         {
-            _redis = ConnectionMultiplexer.Connect(connectionString);
-            _db = _redis.GetDatabase();
-            _server = _redis.GetServer(_redis.GetEndPoints()[0]);
+            _db = redisDatabase ?? throw new ArgumentNullException(nameof(redisDatabase));
+
+            var multiplexer = _db.Multiplexer;
+            _server = multiplexer.GetServer(multiplexer.GetEndPoints()[0]);
 
             _purchaseScript = LuaScriptReader.GetLuaScript(PURCHASE_SCRIPT);
             _timeoutScript = LuaScriptReader.GetLuaScript(TIMEOUT_SCRIPT);
@@ -188,7 +188,7 @@ namespace PurchaseSystem.Data.Redis.Services
                     {
                         Success = true,
                         OrderNo = long.Parse(result.orderNo),
-                        Amount = decimal.Parse(result.price),
+                        Amount = result.price,
                         Message = result.msg
                     };
                 }

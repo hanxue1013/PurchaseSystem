@@ -27,14 +27,14 @@ namespace PurchaseSystem.Worker.Services
             {
                 try
                 {
-                    // 1. 处理异步订单队列（写入数据库）
-                    await ProcessAsyncOrders();
+                    //// 1. 处理异步订单队列（写入数据库）
+                    //await ProcessAsyncOrders();
 
-                    // 2. 处理超时订单队列
-                    await ProcessTimeoutOrders();
+                    //// 2. 处理超时订单队列
+                    //await ProcessTimeoutOrders();
 
-                    // 3. 处理库存恢复队列
-                    await ProcessStockRestore();
+                    //// 3. 处理库存恢复队列
+                    //await ProcessStockRestore();
 
                     // 休眠1秒
                     await Task.Delay(1000, stoppingToken);
